@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>5f28e54c-1ade-482e-9305-4d7c911b0cb2</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>ThingsBoardDotNet</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ReflectionHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RpcError.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RpcEventArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RpcNameAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TBAttributes.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TBAttributesResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TBRpcRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TBRpcResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TBAttributesRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TBTelemetry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ThingsBoardDeviceMqttClient.cs" />
+  </ItemGroup>
+</Project>
