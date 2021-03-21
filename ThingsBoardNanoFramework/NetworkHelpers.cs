@@ -13,19 +13,16 @@ namespace nanoFramework.Networking
 {
     public class NetworkHelpers
     {
-        private static string c_SSID;
-        private static string c_AP_PASSWORD;
+        private const string c_SSID = "REPLACE-WITH-YOUR-SSID";
+        private const string c_AP_PASSWORD = "REPLACE-WITH-YOUR-WIFI-KEY";
 
         private static bool _requiresDateTime;
 
         static public ManualResetEvent IpAddressAvailable = new ManualResetEvent(false);
         static public ManualResetEvent DateTimeAvailable = new ManualResetEvent(false);
 
-        public static void SetupAndConnectNetwork(string SSID, string ApPassword, bool requiresDateTime = false)
+        public static void SetupAndConnectNetwork(bool requiresDateTime = false)
         {
-            c_SSID = SSID;
-            c_AP_PASSWORD = ApPassword;
-
             NetworkChange.NetworkAddressChanged += new NetworkAddressChangedEventHandler(AddressChangedCallback);
 
             _requiresDateTime = requiresDateTime;

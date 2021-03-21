@@ -14,8 +14,6 @@ namespace SamplesNanoFramework
        
         private static string thingsBoardHost = "demo.thingsboard.io";
         private static string thingsBoardAccessToken = "Access_TOKEN";
-        private static string wifiSSID = "REPLACE-WITH-YOUR-SSID";
-        private static string wifiApPASSWORD = "REPLACE-WITH-YOUR-WIFI-KEY";
 
         private static int thingsBoardPort = 1883;
 
@@ -26,7 +24,7 @@ namespace SamplesNanoFramework
         public static void Main()
         {           
             // if we are using TLS it requires valid date & time
-            NetworkHelpers.SetupAndConnectNetwork(wifiSSID, wifiApPASSWORD,true);
+            NetworkHelpers.SetupAndConnectNetwork(true);
 
             Debug.WriteLine("Waiting for network up and IP address...");
             NetworkHelpers.IpAddressAvailable.WaitOne();
