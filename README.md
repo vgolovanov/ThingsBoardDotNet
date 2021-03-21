@@ -18,4 +18,77 @@ Any hardware and software platform compatible with [.Net Core](https://docs.micr
 
 You will need to have ThingsBoard server up and running. The easiest way is to use [Live Demo  ](https://demo.thingsboard.io/signupserver). The alternative option is to install ThingsBoard using [Installation Guide](https://thingsboard.io/docs/user-guide/install/installation-options/).
 
+**Connection diagram**
+
+The following picture summarizes the connections for this project:
+
+![ESP32 wiring](Essentials/ESP32_wiring.png)
+
+**Device provisioning**
+
+This step contains instructions that are necessary to connect your device to ThingsBoard.
+
+Open ThingsBoard Web UI (http://localhost:8080) in browser and login as tenant administrator. If you loaded the demo data during TB installation, the next credentials can be used:
+
+- login: tenant@thingsboard.org
+- password: tenant
+
+Go to “Devices” section. Click “+” button and create a device with the name “ESP32 Pico Device”. Set “Device type” to “default”.
+
+![Device](Essentials/device.png)
+
+Once device created, open its details and click “Manage credentials”.
+
+Copy auto-generated access token from the “Access token” field. Please save this device token. It will be referred to later as **$ACCESS_TOKEN**.
+
+![Credentials](Essentials/credentials.png)
+
+**Provision your dashboard**
+
+Download the dashboard file using this [link](https://thingsboard.io/docs/samples/esp32/resources/esp32-dht22-temp-and-gpio-dashboard.json). Use import/export instructions [instructions](https://thingsboard.io/docs/user-guide/ui/dashboards/#dashboard-importexport) to import the dashboard to your ThingsBoard instance.
+
+**Creating ESP32 firmware**
+
+To get started with nanoFramework, follow [Getting Started](https://docs.nanoframework.net/content/getting-started-guides/getting-started-managed.html) tutorial from nanoFramework website.
+
+Download ThingsBoardDotNet repository from GitHub and open solution in Visual Studio. Open and make default SamplesNanoFramework project. Edit following variables in ThingsBoardGpioAndDHT22Demo.cs file.
+
+```csharp
+private static string thingsBoardHost = "demo.thingsboard.io";
+private static string thingsBoardAccessToken = "Access_TOKEN";
+private static string wifiSSID = "REPLACE-WITH-YOUR-SSID";
+private static string wifiApPASSWORD = "REPLACE-WITH-YOUR-WIFI-KEY";
+```
+
+ Build and Deploy Solution to the ESP32 board from Visual Studio.
+
+**Data visualization and GPIO control**
+
+Finally, open ThingsBoard Web UI. You can access this dashboard by logging in as a tenant administrator.
+
+In case of local installation (if the demo data was added during TB installation):
+
+- login: tenant@thingsboard.org
+- password: tenant
+In case of live-demo server:
+
+login: your live-demo username (email)
+password: your live-demo password
+
+Go to **“Devices**” section and locate “**ESP32 Pico Device**”, open device details and switch to “**Latest telemetry**” tab. If all is configured correctly you should be able to see latest values of *“temperature”* and *“humidity”* in the table.
+
+![Telemetry](Essentials/telemetry.png)
+
+After, open **“Dashboards”** section then locate and open **“ESP32 Pico Dashboard”**. As a result, you will see a time-series chart displaying temperature and humidity level (similar to dashboard image in the introduction).
+
 Once you complete this sample/tutorial, you will see your sensor data on the following dashboard.
+
+![Thingsboard dashboard](Essentials/dashboard.png)
+
+You should also observe a GPIO control for your device. It consists of two widgets: one is for controlling LED blink speed (in milliseconds) and second for turning individual LEDs on and off.
+
+You can switch the status of GPIOs using the control panel. As a result, you will see LEDs status change on the device. To control LED blink speed, simply turn a knob and observe a speed change.
+
+.Net nanoFramework and Json.NetMF code credits goes to the [nanoFramework team](https://discord.gg/gCyBu8T).
+
+Thingsboard documentation credits goes to the [ThingsBoard team](https://thingsboard.io/company/).

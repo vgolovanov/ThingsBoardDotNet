@@ -14,8 +14,9 @@ namespace SamplesNanoFramework
        
         private static string thingsBoardHost = "demo.thingsboard.io";
         private static string thingsBoardAccessToken = "Access_TOKEN";
-        private static string wifiSSID = "REPLACE-WITH-YOUR-SSID";
-        private static string wifiApPASSWORD = "REPLACE-WITH-YOUR-WIFI-KEY";
+        private static string wifiSSID = "REPLACE_WITH-YOUR-SSID";
+        private static string wifiApPASSWORD = "REPLACE_WITH-YOUR-WIFI-KEY";
+
 
         private static int thingsBoardPort = 1883;
 
