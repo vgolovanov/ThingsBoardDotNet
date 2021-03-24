@@ -8,21 +8,30 @@
 ThingsBoard is an open-source IoT platform that enables rapid development, management, and scaling of IoT projects.
 We recommend to review [what-is-thingsboard](https://thingsboard.io/) page and [getting-started guide](https://thingsboard.io/docs/getting-started-guides/helloworld/).
 
-This sample application will allow you to control GPIO of your .Net device using ThingsBoard RPC widgets.
-
-We will use ESP32 Dev Kit board with .Net nanoFramework and .Net Core console application that will connect to ThingsBoard server via MQTT and listen to RPC commands. Sample application code written in C# language which is quite simple and easy to understand.  All operations are visualized using a built-in customizable dashboard.
-
 **Prerequisites**
 
 Any hardware and software platform compatible with [.Net Core](https://docs.microsoft.com/en-us/dotnet/core/install/) and [.Net nanoFramework](https://github.com/nanoframework/nf-interpreter).
 
 You will need to have ThingsBoard server up and running. The easiest way is to use [Live Demo  ](https://demo.thingsboard.io/signupserver). The alternative option is to install ThingsBoard using [Installation Guide](https://thingsboard.io/docs/user-guide/install/installation-options/).
 
+Sample application code written in C# language, that will connect to ThingsBoard server via MQTT protocol to upload telemetry data and listen to RPC commands. All operations are visualized using a built-in customizable dashboard.
+
+**Simple Weather Station on .Net Core**
+
+In .Net Core application we will not cover sensor drivers and all telemetry data will be emulated by random numbers.
+
+**Simple ESP32 Weather Station With BME280**
+
+We will use an ESP32 Dev Kit board with .Net nanoFramework and BME280 sensor measuring relative humidity, barometric pressure and ambient temperature. 
+Also this application will allow you to control GPIO of yours .Net device using ThingsBoard RPC widgets.
+
 **Connection diagram**
 
 The following picture summarizes the connections for this project:
 
 ![ESP32 wiring](Essentials/ESP32_wiring.png)
+
+Connect VIN pin to the 3.3V output and connect GND to ground on the ESP32 board. Remaining pins are used for I2C communication. Connect SDA (data line) to IO21 and SCL (clock line) to IO22 on ESP32 board.
 
 **Device provisioning**
 
@@ -62,6 +71,41 @@ private static string wifiApPASSWORD = "REPLACE-WITH-YOUR-WIFI-KEY";
 
  Build and Deploy Solution to the ESP32 board from Visual Studio.
 
+With ThingsBoardDotNet library you can:
+
+
+Subscribe to ***OnRpcRequestTopic*** event to receive RPC calls from ThingsBoard Platform
+```csharp
+thingsBoard.OnRpcRequestTopic += OnRpcRequestTopic;
+```
+
+The reflection helper class lets you use methods names from c# class as RPC methods called from ThingsBoard.
+```csharp
+ReflectionHelper.FindRpcMethods(typeof(ThingsBoard_Rpc_and_Telemetry_Demo));
+```
+Convention names for c# methods can be bypassed by custom attribute ***RpcName***.
+```csharp
+[RpcName("getGpioStatus")]
+public static void GetGpioStatus(TBRpcRequest rpcRequest){}
+```
+
+Event handler method will be called when an RPC call is raised from the ThingsBoard application. With reflection helper class RPC name will be found in class either by C# method name or custom attribute ***RpcName***.
+```csharp
+ private static void OnRpcRequestTopic(object sender, RpcEventArgs e)       
+{            
+    ReflectionHelper.InvokeRpcMethod(e.RpcRequest);        
+}
+```
+Telemetry publishing
+```csharp
+TBTelemetry telemetry = new TBTelemetry();
+telemetry.Add("temperature", bme280Sensor.ReadTemperature());
+telemetry.Add("humidity", bme280Sensor.ReadHumidity());
+telemetry.Add("pressure", bme280Sensor.ReadPressure());
+                              
+thingsBoard.SendTelemetry(telemetry);
+```
+
 **Data visualization and GPIO control**
 
 Finally, open ThingsBoard Web UI. You can access this dashboard by logging in as a tenant administrator.
@@ -92,3 +136,5 @@ You can switch the status of GPIOs using the control panel. As a result, you wil
 .Net nanoFramework and Json.NetMF code credits goes to the [nanoFramework team](https://discord.gg/gCyBu8T).
 
 Thingsboard documentation credits goes to the [ThingsBoard team](https://thingsboard.io/company/).
+
+BME280 driver for .Net nanoFramework credits goes to the [MBNSoftware](https://github.com/MBNSoftware/MBN-TinyCLR) and [Networkfusion](https://github.com/networkfusion/MBN-TinyCLR/blob/develop-nanoframework/nanoFrameworkDriversStatus.md)
