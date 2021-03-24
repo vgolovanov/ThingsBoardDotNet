@@ -1,4 +1,6 @@
-﻿using nanoFramework.Networking;
+﻿using MBN.Modules;
+using nanoFramework.Hardware.Esp32;
+using nanoFramework.Networking;
 using System;
 using System.Collections;
 using System.Diagnostics;
@@ -8,7 +10,7 @@ using ThingsBoardDotNet;
 
 namespace SamplesNanoFramework
 {
-    public class ThingsBoardGpioAndDHT22Demo
+    public class ThingsBoard_Rpc_and_Telemetry_Demo
     {
         private static ThingsBoardDeviceMqttClient thingsBoard = new ThingsBoardDeviceMqttClient();
        
@@ -17,24 +19,29 @@ namespace SamplesNanoFramework
         private static string wifiSSID = "REPLACE_WITH-YOUR-SSID";
         private static string wifiApPASSWORD = "REPLACE_WITH-YOUR-WIFI-KEY";
 
-
         private static int thingsBoardPort = 1883;
 
         private static Boolean[] pins = new Boolean[] { false, false, false, false}; // Pins array where index is pin number.
         private static double someDeviceValue;
         private static Random random = new Random();
 
-        public static void Main()
-        {           
-            // if we are using TLS it requires valid date & time
-            NetworkHelpers.SetupAndConnectNetwork(wifiSSID, wifiApPASSWORD,true);
+        private static BME280 bme280Sensor;
 
+        public static void Main()
+        {  
+            //Setup I2C pins for ESP32 board
+            Configuration.SetPinFunction(21, DeviceFunction.I2C1_DATA);
+            Configuration.SetPinFunction(22, DeviceFunction.I2C1_CLOCK);
+
+            // if we are using TLS it requires valid date & time     
+            NetworkHelpers.SetupAndConnectNetwork(wifiSSID, wifiApPASSWORD, true);
+
+            NetworkHelpers.CheckIP();
             Debug.WriteLine("Waiting for network up and IP address...");
             NetworkHelpers.IpAddressAvailable.WaitOne();
+           
 
-            Debug.WriteLine("Waiting for valid Date & Time...");
-            NetworkHelpers.DateTimeAvailable.WaitOne();
-
+            bme280Sensor = new BME280(1, BME280.I2CAddresses.Address0);
             someDeviceValue = random.Next(50);
 
             if (!SetupThingsBoard())
@@ -42,7 +49,7 @@ namespace SamplesNanoFramework
                 Debug.WriteLine("Error connecting to the server");
                 return;
             }
-
+         
             // launch telemetry thread
             Thread telemetryThread = new Thread(new ThreadStart(TelemetryLoop));
             telemetryThread.Start();
@@ -53,11 +60,11 @@ namespace SamplesNanoFramework
             {
                 Thread.Sleep(1000);
             }
-        }  
-        
+        }
+    
         private static bool SetupThingsBoard()
         {
-            ReflectionHelper.FindRpcMethods(typeof(ThingsBoardGpioAndDHT22Demo));
+            ReflectionHelper.FindRpcMethods(typeof(ThingsBoard_Rpc_and_Telemetry_Demo));
             thingsBoard.OnRpcRequestTopic += OnRpcRequestTopic;           
             thingsBoard.OnRpcError += OnRpcError;
            
@@ -73,9 +80,10 @@ namespace SamplesNanoFramework
             while (true)
             {
                 TBTelemetry telemetry = new TBTelemetry();
-                telemetry.Add("temperature", random.Next(30));
-                telemetry.Add("humidity", random.Next(80));
-
+                telemetry.Add("temperature", bme280Sensor.ReadTemperature());
+                telemetry.Add("humidity", bme280Sensor.ReadHumidity());
+                telemetry.Add("pressure", bme280Sensor.ReadPressure());
+                              
                 thingsBoard.SendTelemetry(telemetry);
 
                 Debug.WriteLine("Message sent: " + telemetry.ToJson());
