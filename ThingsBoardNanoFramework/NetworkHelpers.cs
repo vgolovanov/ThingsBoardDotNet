@@ -6,6 +6,7 @@
 using nanoFramework.Runtime.Events;
 using System;
 using System.Diagnostics;
+using System.Net;
 using System.Net.NetworkInformation;
 using System.Threading;
 
@@ -13,28 +14,35 @@ namespace nanoFramework.Networking
 {
     public class NetworkHelpers
     {
-        private static string c_SSID;
-        private static string c_AP_PASSWORD;
+        private static string c_SSID ;
+        private static string c_AP_PASSWORD ;
 
         private static bool _requiresDateTime;
 
         static public ManualResetEvent IpAddressAvailable = new ManualResetEvent(false);
         static public ManualResetEvent DateTimeAvailable = new ManualResetEvent(false);
 
-        public static void SetupAndConnectNetwork(string SSID, string ApPassword, bool requiresDateTime = false)
+        public static void SetupAndConnectNetwork(string WifiApSSID, string WifiApPassword, bool requiresDateTime = false)
         {
-            c_SSID = SSID;
-            c_AP_PASSWORD = ApPassword;
+            c_SSID = WifiApSSID;
+            c_AP_PASSWORD = WifiApPassword;
 
             NetworkChange.NetworkAddressChanged += new NetworkAddressChangedEventHandler(AddressChangedCallback);
 
             _requiresDateTime = requiresDateTime;
-
             new Thread(WorkingThread).Start();
         }
 
         internal static void WorkingThread()
         {
+            do
+            {
+                Debug.WriteLine("Waiting for network available...");
+
+                Thread.Sleep(500);
+            }
+            while (!NetworkInterface.GetIsNetworkAvailable());
+
             NetworkInterface[] nis = NetworkInterface.GetAllNetworkInterfaces();
 
             if (nis.Length > 0)
@@ -47,13 +55,15 @@ namespace nanoFramework.Networking
                     // network interface is Wi-Fi
                     Debug.WriteLine("Network connection is: Wi-Fi");
 
+                    var ara = Wireless80211Configuration.GetAllWireless80211Configurations();
                     Wireless80211Configuration wc = Wireless80211Configuration.GetAllWireless80211Configurations()[ni.SpecificConfigId];
+
 
                     // note on checking the 802.11 configuration
                     // on secure devices (like the TI CC3220SF) the password can't be read
                     // so we can't use the code block bellow to automatically set the profile
-                    if ((wc.Ssid != c_SSID && wc.Password != c_AP_PASSWORD) &&
-                         (wc.Ssid != "" && wc.Password == ""))
+                
+                    if (wc.Ssid != c_SSID || wc.Password != c_AP_PASSWORD) //&& (wc.Ssid != "" && wc.Password == ""))
                     {
                         // have to update Wi-Fi configuration
                         wc.Ssid = c_SSID;
@@ -72,9 +82,6 @@ namespace nanoFramework.Networking
                     Debug.WriteLine("Network connection is: Ethernet");
                 }
 
-                ni.EnableAutomaticDns();
-                ni.EnableDhcp();
-
                 // check if we have an IP
                 CheckIP();
 
@@ -91,7 +98,7 @@ namespace nanoFramework.Networking
             }
         }
 
-        public static void SetDateTime()
+        private static void SetDateTime()
         {
             Debug.WriteLine("Setting up system clock...");
 
@@ -103,21 +110,23 @@ namespace nanoFramework.Networking
                 Thread.Sleep(1000);
             }
 
+            Debug.WriteLine($"System time is: {DateTime.UtcNow.ToString()}");
+
             DateTimeAvailable.Set();
         }
 
         public static void CheckIP()
         {
-            Debug.WriteLine("Checking for IP");
+            var myAddress = IPGlobalProperties.GetIPAddress();
 
-            NetworkInterface ni = NetworkInterface.GetAllNetworkInterfaces()[0];
-            if (ni.IPv4Address != null && ni.IPv4Address.Length > 0)
+            if (myAddress != IPAddress.Any)
             {
-                if (ni.IPv4Address[0] != '0')
-                {
-                    Debug.WriteLine($"We have and IP: {ni.IPv4Address}");
-                    IpAddressAvailable.Set();
-                }
+                Debug.WriteLine($"We have and IP: {myAddress}");
+                IpAddressAvailable.Set();
+            }
+            else
+            {
+                Debug.WriteLine("No IP...");
             }
         }
 
