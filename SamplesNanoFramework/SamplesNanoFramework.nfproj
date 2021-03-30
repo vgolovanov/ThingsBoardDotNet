@@ -26,6 +26,7 @@
     <Compile Include="SensorsDrivers\IHumidity.cs" />
     <Compile Include="SensorsDrivers\IPressure.cs" />
     <Compile Include="SensorsDrivers\ITemperature.cs" />
+    <Compile Include="Simple_Weather_Station.cs" />
     <Compile Include="ThingsBoard_Rpc_and_Telemetry_Demo.cs" />
   </ItemGroup>
   <ItemGroup>
