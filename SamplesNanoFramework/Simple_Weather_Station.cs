@@ -49,6 +49,7 @@ namespace SamplesNanoFramework
 
             while (true)
             {
+
                 Thread.Sleep(1000);
             }
         }

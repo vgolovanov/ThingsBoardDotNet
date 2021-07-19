@@ -4,8 +4,13 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 
-namespace ThingsBoardDotNet
+#if (NANOFRAMEWORK_1_0)
+namespace nanoFramework.ThingsBoard
 {
+#else
+namespace dotNETCore.ThingsBoard
+{
+#endif  
     public static class ReflectionHelper
     {
         private static Hashtable calledMethods;

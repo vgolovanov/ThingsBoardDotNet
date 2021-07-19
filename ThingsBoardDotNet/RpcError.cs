@@ -1,8 +1,13 @@
 ﻿using System;
 using System.Text;
 
-namespace ThingsBoardDotNet
+#if (NANOFRAMEWORK_1_0)
+namespace nanoFramework.ThingsBoard
 {
+#else
+namespace dotNETCore.ThingsBoard
+{
+#endif  
     public class RpcError
     {
         public string Error;

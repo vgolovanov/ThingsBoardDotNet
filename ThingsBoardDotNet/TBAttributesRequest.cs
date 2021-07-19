@@ -3,8 +3,13 @@ using System;
 using System.Collections;
 
 
-namespace ThingsBoardDotNet
+#if (NANOFRAMEWORK_1_0)
+namespace nanoFramework.ThingsBoard
 {
+#else
+namespace dotNETCore.ThingsBoard
+{
+#endif  
     public class TBAttributesRequest
     {
         public string clientKeys { get; set; }

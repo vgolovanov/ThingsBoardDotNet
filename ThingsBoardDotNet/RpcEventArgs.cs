@@ -1,8 +1,13 @@
 ﻿using System;
 using System.Collections;
 
-namespace ThingsBoardDotNet
+#if (NANOFRAMEWORK_1_0)
+namespace nanoFramework.ThingsBoard
 {
+#else
+namespace dotNETCore.ThingsBoard
+{
+#endif  
     public class RpcEventArgs
     {
         public TBRpcRequest RpcRequest { get; set; }

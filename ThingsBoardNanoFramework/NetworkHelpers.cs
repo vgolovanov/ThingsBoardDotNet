@@ -8,6 +8,7 @@ using System;
 using System.Diagnostics;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Text;
 using System.Threading;
 
 namespace nanoFramework.Networking
@@ -21,6 +22,8 @@ namespace nanoFramework.Networking
 
         static public ManualResetEvent IpAddressAvailable = new ManualResetEvent(false);
         static public ManualResetEvent DateTimeAvailable = new ManualResetEvent(false);
+        private static NetworkInterface ni;
+        private static byte[] hardwareAddress;
 
         public static void SetupAndConnectNetwork(string WifiApSSID, string WifiApPassword, bool requiresDateTime = false)
         {
@@ -30,10 +33,11 @@ namespace nanoFramework.Networking
             NetworkChange.NetworkAddressChanged += new NetworkAddressChangedEventHandler(AddressChangedCallback);
 
             _requiresDateTime = requiresDateTime;
-            new Thread(WorkingThread).Start();
+            //  new Thread(WorkingThread).Start();
+            WorkingThread();
         }
 
-        internal static void WorkingThread()
+        private static void WorkingThread()
         {
             do
             {
@@ -48,14 +52,15 @@ namespace nanoFramework.Networking
             if (nis.Length > 0)
             {
                 // get the first interface
-                NetworkInterface ni = nis[0];
+                ni = nis[0];
 
                 if (ni.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
                 {
                     // network interface is Wi-Fi
                     Debug.WriteLine("Network connection is: Wi-Fi");
+                    hardwareAddress = ni.PhysicalAddress;
 
-                    var ara = Wireless80211Configuration.GetAllWireless80211Configurations();
+                    //  var ara = Wireless80211Configuration.GetAllWireless80211Configurations();
                     Wireless80211Configuration wc = Wireless80211Configuration.GetAllWireless80211Configurations()[ni.SpecificConfigId];
 
 
@@ -68,7 +73,7 @@ namespace nanoFramework.Networking
                         // have to update Wi-Fi configuration
                         wc.Ssid = c_SSID;
                         wc.Password = c_AP_PASSWORD;
-                        wc.SaveConfiguration();
+                        wc.SaveConfiguration();                       
                     }
                     else
                     {
@@ -82,15 +87,15 @@ namespace nanoFramework.Networking
                     Debug.WriteLine("Network connection is: Ethernet");
                 }
 
-                // check if we have an IP
+                //// check if we have an IP
                 CheckIP();
 
-                if (_requiresDateTime)
-                {
-                    IpAddressAvailable.WaitOne();
+                //if (_requiresDateTime)
+                //{
+                //    IpAddressAvailable.WaitOne();
 
-                    SetDateTime();
-                }
+                //    SetDateTime();
+                //}
             }
             else
             {
@@ -98,7 +103,7 @@ namespace nanoFramework.Networking
             }
         }
 
-        private static void SetDateTime()
+        public static void SetDateTime()
         {
             Debug.WriteLine("Setting up system clock...");
 
@@ -115,19 +120,64 @@ namespace nanoFramework.Networking
             DateTimeAvailable.Set();
         }
 
-        public static void CheckIP()
+        public static bool CheckIP()
         {
-            var myAddress = IPGlobalProperties.GetIPAddress();
+            //var myAddress = IPGlobalProperties.GetIPAddress();
 
-            if (myAddress != IPAddress.Any)
+            //if (myAddress != IPAddress.Any)
+            //{
+            //    Debug.WriteLine($"We have and IP: {myAddress}");
+            //    IpAddressAvailable.Set();
+            //    return true;
+            //}
+            //else
+            //{
+            //    Debug.WriteLine("No IP...");
+            //    return false;
+            //}
+            Debug.WriteLine("Checking for IP");
+
+            NetworkInterface ni = NetworkInterface.GetAllNetworkInterfaces()[0];
+            if (ni.IPv4Address != null && ni.IPv4Address.Length > 0)
             {
-                Debug.WriteLine($"We have and IP: {myAddress}");
-                IpAddressAvailable.Set();
+                if (ni.IPv4Address[0] != '0')
+                {
+                    Debug.WriteLine($"We have and IP: {ni.IPv4Address}");
+                    IpAddressAvailable.Set();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
             else
             {
-                Debug.WriteLine("No IP...");
+                return false;
             }
+        }
+                    
+        public static string GetPhysicalAddress(char Separator=Char.MinValue)
+        {
+            StringBuilder hardwareAddrStr = new StringBuilder();
+
+          //  var len = ni.PhysicalAddress.Length;
+
+            foreach (var addr in hardwareAddress)
+            {
+                hardwareAddrStr.Append(addr.ToString("x2").ToUpper());
+                if(Separator!=Char.MinValue)
+                {
+                    hardwareAddrStr.Append(Separator);
+                }
+            }
+
+            if (hardwareAddrStr.Length > 0)
+            {
+                hardwareAddrStr.Remove(hardwareAddrStr.Length - 1, 1);
+            }
+
+            return hardwareAddrStr.ToString();            
         }
 
         static void AddressChangedCallback(object sender, EventArgs e)

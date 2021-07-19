@@ -1,14 +1,28 @@
 ﻿
 using Json.NetMF;
+#if (NANOFRAMEWORK_1_0)
+using nanoFramework.M2Mqtt;
+using nanoFramework.M2Mqtt.Messages;
+#else
+//using uPLibrary.Networking.M2Mqtt;
+//using uPLibrary.Networking.M2Mqtt.Messages;
+using M2Mqtt;
+using M2Mqtt.Messages;
+#endif
 using System;
 using System.Collections;
 using System.Text;
 
-using uPLibrary.Networking.M2Mqtt;
-using uPLibrary.Networking.M2Mqtt.Messages;
 
-namespace ThingsBoardDotNet
+
+
+#if (NANOFRAMEWORK_1_0)
+namespace nanoFramework.ThingsBoard
 {
+#else
+namespace dotNETCore.ThingsBoard
+{
+#endif 
     public class ThingsBoardDeviceMqttClient
     {
         public bool Connected = false;
@@ -31,22 +45,22 @@ namespace ThingsBoardDotNet
         public event RpcEventHandler OnRpcError;
         public event RpcEventHandler OnAttributesResponseTopic;
         
-        private byte QoS;
+        private MqttQoSLevel QoS;
         private int tbRequestId = 0;
       
         public ThingsBoardDeviceMqttClient()
         {       
         }
 
-        public bool Connect(string Host, string AccessToken, int Port = 1883, byte QoSLevel = MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE)
+        public bool Connect(string Host, string AccessToken, int Port = 1883)
         {
             if (Host == null || AccessToken == null) return false;
 
             string clientId = Guid.NewGuid().ToString(); ;
             client = new MqttClient(Host, Port, false, null, null, MqttSslProtocols.None);
-
+           
             client.MqttMsgPublishReceived += Client_MqttMsgPublishReceived;
-            client.MqttMsgSubscribed += Client_MqttMsgSubscribed;           
+            client.MqttMsgSubscribed += Client_MqttMsgSubscribed;
             client.ConnectionClosed += Client_ConnectionClosed;
                      
             var result = client.Connect(clientId, AccessToken, null);
@@ -55,16 +69,16 @@ namespace ThingsBoardDotNet
 
             Connected = true;
             
-            this.QoS = QoSLevel;
+            this.QoS = MqttQoSLevel.AtLeastOnce;
 
-            client.Subscribe(new string[] { ATTRIBUTES_TOPIC }, new byte[] { QoS });
-            client.Subscribe(new string[] { ATTRIBUTES_TOPIC + "/response/+" }, new byte[] { QoS });
-            client.Subscribe(new string[] { RPC_REQUEST_TOPIC + "+" }, new byte[] { QoS });
-            client.Subscribe(new string[] { RPC_RESPONSE_TOPIC + "+" }, new byte[] { QoS });
+            client.Subscribe(new string[] { ATTRIBUTES_TOPIC }, new MqttQoSLevel[] { QoS });
+            client.Subscribe(new string[] { ATTRIBUTES_TOPIC + "/response/+" }, new MqttQoSLevel[] { QoS });
+            client.Subscribe(new string[] { RPC_REQUEST_TOPIC + "+" }, new MqttQoSLevel[] { QoS });
+            client.Subscribe(new string[] { RPC_RESPONSE_TOPIC + "+" }, new MqttQoSLevel[] { QoS });
 
             return true;
         }
-
+  
         public void Disconnect()
         {
             client.Disconnect();
@@ -84,42 +98,42 @@ namespace ThingsBoardDotNet
         {
             string topic = e.Topic;
             string message = Encoding.UTF8.GetString(e.Message, 0, e.Message.Length);
-            string[] splitTopic= topic.Split('/');
-            int rpcActionId = int.Parse( splitTopic[splitTopic.Length-1]);
+            string[] splitTopic = topic.Split('/');
+            int rpcActionId = int.Parse(splitTopic[splitTopic.Length - 1]);
 
             Hashtable deserializedObject = JsonSerializer.DeserializeString(message) as Hashtable;
-                            
+
             if (topic.StartsWith(RPC_REQUEST_TOPIC))
             {
                 TBRpcRequest rpcRequest = new TBRpcRequest((string)deserializedObject["method"], deserializedObject["params"], rpcActionId);
 
-                if (OnRpcRequestTopic != null)                    
-                {                        
-                    OnRpcRequestTopic(this, new RpcEventArgs(rpcRequest));                    
-                }                  
+                if (OnRpcRequestTopic != null)
+                {
+                    OnRpcRequestTopic(this, new RpcEventArgs(rpcRequest));
+                }
             }
             else if (topic.StartsWith(RPC_RESPONSE_TOPIC))
             {
                 string error = (string)deserializedObject["error"];
-                
+
 
                 if (error != null)
                 {
-                    RpcError rpcError = new RpcError (error, rpcActionId);
+                    RpcError rpcError = new RpcError(error, rpcActionId);
 
                     if (OnRpcError != null)
                     {
                         OnRpcError(this, new RpcEventArgs(rpcError));
-                    }                    
+                    }
                 }
-                else if(OnRpcResponseTopic != null)
+                else if (OnRpcResponseTopic != null)
                 {
                     TBRpcResponse rpcResponse = new TBRpcResponse(rpcActionId);
                     OnRpcResponseTopic(this, new RpcEventArgs(rpcResponse));
-                }                   
+                }
             }
 
-            else if (topic==ATTRIBUTES_TOPIC)
+            else if (topic == ATTRIBUTES_TOPIC)
             {
 
             }
@@ -135,7 +149,7 @@ namespace ThingsBoardDotNet
 
         public void SendRPCReply(TBRpcResponse rpcResponse)
         {
-            client.Publish(RPC_RESPONSE_TOPIC + rpcResponse.RpcResponsetId, Encoding.UTF8.GetBytes(rpcResponse.ToJson()), QoS, false);
+            client.Publish(RPC_RESPONSE_TOPIC + rpcResponse.RpcResponsetId, Encoding.UTF8.GetBytes(rpcResponse.ToJson()), QoS, false);            
         }
 
         public void SendRPCRequest(TBRpcRequest rpcRequest)

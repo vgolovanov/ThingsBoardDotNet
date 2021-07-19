@@ -3,8 +3,13 @@ using Json.NetMF;
 using System;
 using System.Text;
 
-namespace ThingsBoardDotNet
-{   
+#if (NANOFRAMEWORK_1_0)
+namespace nanoFramework.ThingsBoard
+{
+#else
+namespace dotNETCore.ThingsBoard
+{
+#endif     
     public class TBRpcRequest
     {
         [JsonPropertyName("method")]

@@ -137,4 +137,3 @@ You can switch the status of GPIOs using the control panel. As a result, you wil
 
 Thingsboard documentation credits goes to the [ThingsBoard team](https://thingsboard.io/company/).
 
-BME280 driver for .Net nanoFramework credits goes to the [MBNSoftware](https://github.com/MBNSoftware/MBN-TinyCLR) and [Networkfusion](https://github.com/networkfusion/MBN-TinyCLR/blob/develop-nanoframework/nanoFrameworkDriversStatus.md)

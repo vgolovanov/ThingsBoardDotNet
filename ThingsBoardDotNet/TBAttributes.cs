@@ -3,8 +3,13 @@ using System;
 using System.Collections;
 using System.Text;
 
-namespace ThingsBoardDotNet
+#if (NANOFRAMEWORK_1_0)
+namespace nanoFramework.ThingsBoard
 {
+#else
+namespace dotNETCore.ThingsBoard
+{
+#endif    
     public class TBAttributes
     {
         private Hashtable attributesData = new Hashtable();
