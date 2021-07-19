@@ -16,14 +16,12 @@ namespace nanoFramework.ThingsBoard.Samples
         private static ThingsBoardDeviceMqttClient thingsBoard = new ThingsBoardDeviceMqttClient();
 
         private static string thingsBoardHost = "demo.thingsboard.io";
-        //private static string thingsBoardAccessToken = "Access_TOKEN";
-        //private static string wifiSSID = "REPLACE_WITH-YOUR-SSID";
-        //private static string wifiApPASSWORD = "REPLACE_WITH-YOUR-WIFI-KEY";
+        private static string thingsBoardAccessToken = "Access_TOKEN";
+        private static string wifiSSID = "REPLACE_WITH-YOUR-SSID";
+        private static string wifiApPASSWORD = "REPLACE_WITH-YOUR-WIFI-KEY";
         private static int sleepTimeMinutes = 60000;
 
-        private static string thingsBoardAccessToken = "ESP32_DEMO_TOKEN2";// "Access_TOKEN";
-        private static string wifiSSID = "Xiaomi_A7EB";//"REPLACE_WITH-YOUR-SSID";
-        private static string wifiApPASSWORD = "SLAWEK0000000";// "REPLACE_WITH-YOUR-WIFI-KEY";
+     
 
         private static int thingsBoardPort = 1883;
 
