@@ -19,10 +19,7 @@ namespace nanoFramework.ThingsBoard.Samples
         private static string thingsBoardAccessToken = "Access_TOKEN";
         private static string wifiSSID = "REPLACE_WITH-YOUR-SSID";
         private static string wifiApPASSWORD = "REPLACE_WITH-YOUR-WIFI-KEY";
-        private static int sleepTimeMinutes = 60000;
-
-     
-
+        private static int sleepTimeMinutes = 60000;      
         private static int thingsBoardPort = 1883;
 
         private static Boolean[] pins = new Boolean[] { false, false, false, false }; // Pins array where index is pin number.
@@ -65,7 +62,9 @@ namespace nanoFramework.ThingsBoard.Samples
             Debug.WriteLine($"Date and time is now {DateTime.UtcNow}");
 
             const int busId = 1;
-            I2cConnectionSettings i2cSettings = new(busId, Bmp280.DefaultI2cAddress);           
+
+            //If SDO pin connected to the 3V,Bmp280.DefaultI2cAddress if SDO pin connected to the GND then Bmp280.SecondaryI2cAddress
+            I2cConnectionSettings i2cSettings = new(busId, Bmp280.SecondaryI2cAddress);           
             I2cDevice i2cDevice = I2cDevice.Create(i2cSettings);
             
             bme280Sensor = new Bme280(i2cDevice);
